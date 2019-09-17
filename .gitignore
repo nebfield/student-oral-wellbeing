@@ -1,0 +1,6 @@
+t/
+.nextflow*
+.idea*
+work/
+results
+my-results
