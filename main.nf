@@ -244,3 +244,19 @@ process adjust_copynumber {
     adjust_copynumber.R $ps_first_copynum
     """
 }
+
+process ordination {
+    container 'nebfold/bioconductor'
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+
+    input:
+    file ps_copyadj
+
+    output:
+    file "*.png"
+    file "*.txt"
+
+    """
+    plt_ordination.R $ps_copyadj
+    """
+}
