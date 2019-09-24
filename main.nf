@@ -9,6 +9,7 @@ second_wave_forward = file("/data/wp6/sws_microbiome/second_wave_n30/Ulster_July
 second_wave_reverse = file("/data/wp6/sws_microbiome/second_wave_n30/Ulster_July2017_S0_L001_R2_001.fastq.gz")
 second_wave_index = file("/data/wp6/sws_microbiome/second_wave_n30/Ulster_July2017_S0_L001_I1_001.fastq.gz")
 second_wave_map = file("/data/wp6/sws_microbiome/second_wave_n30/mappingfile_Ulster_July2017.txt")
+second_sample_meta = file("/data/wp6/sws_microbiome/second_sample_meta.tsv")
 
 silva = file("/data/wp6/silva-132-99-nb-classifier.qza")
 
@@ -93,11 +94,11 @@ process qiime_denoise {
     file demuxed_second
 
     output:
-    file "first_feat_tab.qza" into first_feat_tab
-    file "first_rep_seqs.qza" into first_rep_seqs, first_rep_seqs_pg, first_rep_seqs_da
+    file "first_feat_tab.qza" into first_feat_tab, first_feat_tab_pc
+    file "first_rep_seqs.qza" into first_rep_seqs, first_rep_seqs_pg, first_rep_seqs_da, first_rep_seqs_pc
     file "first_stats.qza" into first_stats
-    file "second_feat_tab.qza" into second_feat_tab
-    file "second_rep_seqs.qza" into second_rep_seqs, second_rep_seqs_pg
+    file "second_feat_tab.qza" into second_feat_tab, second_feat_tab_pc
+    file "second_rep_seqs.qza" into second_rep_seqs, second_rep_seqs_pg, second_rep_seqs_pc
     file "second_stats.qza" into second_stats
 
     """
@@ -190,11 +191,30 @@ process qiime_to_phyloseq {
     file first_sample_meta
 
     output:
-    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum
+    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_first_pred
 
     """
     qza_to_ps.R $first_feat_tab $first_rooted_tree $first_taxonomy $first_sample_meta
     """ 
+}
+
+process qiime_to_phyloseq_val {
+    container 'nebfold/bioconductor'
+
+    input:
+    file second_feat_tab
+    file second_rooted_tree
+    file second_taxonomy
+    file second_sample_meta
+
+    output:
+    file "ps_second.rds" into ps_val_copynum
+
+    """
+    # TODO!
+    qza_to_ps_val.R $second_feat_tab $second_rooted_tree \
+      $second_taxonomy $second_sample_meta
+    """
 }
 
 process differential_abundance {
@@ -236,12 +256,14 @@ process adjust_copynumber {
 
     input:
     file ps_first_copynum
+    file ps_val_copynum
 
     output:
     file "ps_copyadj.rds" into ps_copyadj
 
     """
     adjust_copynumber.R $ps_first_copynum
+    adjust_copynumber.R $ps_val_copynum
     """
 }
 
@@ -258,5 +280,50 @@ process ordination {
 
     """
     plt_ordination.R $ps_copyadj
+    """
+}
+
+process prediction {
+    input:
+    file ps_first_pred
+
+    """
+    # TODO!
+    # prediction.R $ps_first_pred ps_val
+    """
+}
+
+process qiime_picrust2 {
+    container 'nebfold/picrust2'
+
+    input:
+    file first_feat_tab_pc
+    file first_rep_seqs_pc
+    file second_feat_tab_pc
+    file second_rep_seqs_pc
+
+    output:
+    file "first_*.qza" into first_ko_picrust2
+    file "second_*.qza" into second_ko_picrust2
+
+    """
+    qiime picrust2 full-pipeline \
+       --i-table $first_feat_tab_pc \
+       --i-seq $first_rep_seqs_pc \
+       --o-ko-metagenome first_ko.qza \
+       --o-ec-metagenome first_ec.qza \
+       --o-pathway-abundance first_mc.qza \
+       --p-threads 24 \
+       --p-hsp-method mp \
+       --p-max-nsti 2
+    qiime picrust2 full-pipeline \
+       --i-table $second_feat_tab_pc \
+       --i-seq $second_rep_seqs_pc \
+       --o-ko-metagenome second_ko.qza \
+       --o-ec-metagenome second_ec.qza \
+       --o-pathway-abundance second_mc.qza \
+       --p-threads 24 \
+       --p-hsp-method mp \
+       --p-max-nsti 2 
     """
 }
