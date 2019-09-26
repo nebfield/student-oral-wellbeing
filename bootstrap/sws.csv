@@ -1,0 +1,41 @@
+pathway,m,cohort,lda,p,desc,superclass
+ASPASN_PWY,3.806399308,Depression,2.25605938,0.019667707,superpathway of L-aspartate and L-asparagine biosynthesis,Amino acid biosynthesis
+PWY_5154,3.090505632,Healthy,2.08188,0.049583365,L-arginine biosynthesis III,Amino acid biosynthesis
+VALSYN_PWY,3.805206716,Healthy,2.313223305,0.031125396,L-valine biosynthesis,Amino acid biosynthesis
+PWY_7222,3.938770452,Depression,2.223227099,0.043114952,guanosine deoxyribonucleotides de novo biosynthesis II,Nucleoside and Nucleotide Biosynthesis 
+PWY_6545,3.245260989,Depression,2.355913294,0.015469013,pyrimidine deoxyribonucleotides de novo biosynthesis III,Nucleoside and Nucleotide Biosynthesis 
+PWY_5384,3.38127663,Healthy,2.305692441,0.040157844,sucrose degradation IV (sucrose phosphorylase),Carbohydrate Degradation 
+GLYCOLYSIS,3.844346156,Healthy,2.094135699,0.031125396,Glycolysis,Glycolysis
+PWY_7220,3.938770452,Depression,2.223227099,0.043114952,adenosine deoxyribonucleotides de novo biosynthesis II,Nucleoside and Nucleotide Biosynthesis 
+PWY_7234,3.716656817,Healthy,2.206078931,0.033508344,inosine-5'-phosphate biosynthesis III,Nucleoside and Nucleotide Biosynthesis 
+P441_PWY,3.615058323,Healthy,2.076808756,0.011106946,superpathway of N-acetylneuraminate degradation,Carboxylate Degradation
+BRANCHED_CHAIN_AA_SYN_PWY,3.791709044,Healthy,2.270734706,0.023895198,superpathway of branched chain amino acid biosynthesis,Amino acid biosynthesis
+PWY0_1261,3.67870969,Healthy,2.245153555,0.036045658,anhydromuropeptides recycling I, Secondary Metabolite Degradation
+PWY_6700,3.818307354,Depression,2.30132735,0.005511158,queuosine biosynthesis,Nucleic Acid Processing
+PYRIDNUCSAL_PWY,3.678949765,Depression,2.29593676,0.034757232,NAD salvage pathway I (PNC VI cycle),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PWY0_1586,3.647473428,Healthy,2.460290463,0.01425648,peptidoglycan maturation (meso-diaminopimelate containing),Cell Structure Biosynthesis
+PWY_5101,3.830042157,Healthy,2.362076606,0.023895198,L-isoleucine biosynthesis II,Amino acid biosynthesis
+PWY_5103,3.767622715,Healthy,2.289071365,0.023895198,L-isoleucine biosynthesis III,Amino acid biosynthesis
+PYRIDNUCSYN_PWY,3.590082739,Depression,2.374811807,0.018169074,NAD de novo biosynthesis I (from aspartate),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+GLCMANNANAUT_PWY,3.522774758,Healthy,2.287121494,0.004805033,"superpathway of N-acetylglucosamine, N-acetylmannosamine and N-acetylneuraminate degradation",Amine and Polyamine Degradation
+POLYISOPRENSYN_PWY,3.822265656,Depression,2.050213861,0.017457976,polyisoprenoid biosynthesis (E. coli),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PANTO_PWY,3.676672168,Depression,2.398969444,0.007874042,phosphopantothenate biosynthesis I,"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PWY_5863,3.491297885,Healthy,2.109543929,0.046254028,superpathway of phylloquinol biosynthesis,"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PENTOSE_P_PWY,3.667057152,Healthy,2.310186461,0.016108639,pentose phosphate pathway,Pentose Phosphate Pathways
+UDPNAGSYN_PWY,3.741438298,Healthy,2.211857578,0.008591459,UDP-N-acetyl-D-glucosamine biosynthesis I,Carbohydrate Biosynthesis
+PANTOSYN_PWY,3.748034992,Depression,2.427921475,0.006598067,superpathway of coenzyme A biosynthesis I (bacteria),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+P42_PWY,3.849388338,Depression,2.430980639,0.028889374,incomplete reductive TCA cycle,C1 Compound Utilization and Assimilation
+PWY_7328,3.345197501,Healthy,2.131380438,0.024829399,superpathway of UDP-glucose-derived O-antigen building blocks biosynthesis,Carbohydrate Biosynthesis
+PWY_7323,3.644251725,Depression,2.395822216,0.037374583,superpathway of GDP-mannose-derived O-antigen building blocks biosynthesis,Carbohydrate Biosynthesis
+PWY4FS_7,3.877785649,Healthy,2.301956471,0.032298044,phosphatidylglycerol biosynthesis I (plastidic),Fatty Acid and Lipid Biosynthesis
+PWY_5189,3.638731617,Healthy,2.324689496,0.01425648,tetrapyrrole biosynthesis II (from glycine),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PWY_5188,3.65671188,Healthy,2.301303778,0.012080331,tetrapyrrole biosynthesis I (from glutamate),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PWY_5484,3.803006982,Healthy,2.301957313,0.002726656,glycolysis II (from fructose 6-phosphate),Glycolysis
+COLANSYN_PWY,3.639889324,Depression,2.32085233,0.027824192,colanic acid building blocks biosynthesis,Carbohydrate Biosynthesis
+PWY_5973,3.9232925,Depression,2.143505032,0.005030748,cis-vaccenate biosynthesis,Fatty Acid and Lipid Biosynthesis
+NAD_BIOSYNTHESIS_II,3.44014234,Healthy,2.412920252,0.012594806,NAD salvage pathway III (to nicotinamide riboside),"Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+PWY4FS_8,3.877785649,Healthy,2.301956471,0.032298044,phosphatidylglycerol biosynthesis II (non-plastidic),Fatty Acid and Lipid Biosynthesis
+NAGLIPASYN_PWY,3.798675366,Depression,2.214822933,0.049583365,lipid IVA biosynthesis (E. coli),Cell Structure Biosynthesis
+ILEUSYN_PWY,3.805206716,Healthy,2.313223305,0.031125396,L-isoleucine biosynthesis I (from threonine),Amino acid biosynthesis
+PWY_5837,3.477673919,Healthy,2.158174085,0.04466123,"2-carboxy-1,4-naphthoquinol biosynthesis","Cofactor, Prosthetic Group, Electron Carrier, and Vitamin Biosynthesis"
+ENTBACSYN_PWY,3.139820663,Healthy,2.283072662,0.029989477,enterobactin biosynthesis,Secondary Metabolite Biosynthesis

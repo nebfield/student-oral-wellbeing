@@ -12,6 +12,7 @@ second_wave_map = file("/data/wp6/sws_microbiome/second_wave_n30/mappingfile_Uls
 second_sample_meta = file("/data/wp6/sws_microbiome/second_sample_meta.tsv")
 
 silva = file("/data/wp6/silva-132-99-nb-classifier.qza")
+lefse_csv = file("$baseDir/bootstrap/sws.csv")
 
 process qiime_import {
     container 'qiime2/core:2019.7'
@@ -182,7 +183,7 @@ process qiime_phylogeny {
 }
 
 process qiime_to_phyloseq {
-    container 'nebfold/bioconductor'
+    container 'nebfold/bioc'
 
     input:
     file first_feat_tab
@@ -191,7 +192,7 @@ process qiime_to_phyloseq {
     file first_sample_meta
 
     output:
-    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_first_pred
+    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_first_pred, ps_lefse
 
     """
     qza_to_ps.R $first_feat_tab $first_rooted_tree $first_taxonomy $first_sample_meta
@@ -199,7 +200,7 @@ process qiime_to_phyloseq {
 }
 
 process qiime_to_phyloseq_val {
-    container 'nebfold/bioconductor'
+    container 'nebfold/bioc'
 
     input:
     file second_feat_tab
@@ -218,7 +219,7 @@ process qiime_to_phyloseq_val {
 }
 
 process differential_abundance {
-    container 'nebfold/bioconductor'
+    container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
@@ -235,7 +236,7 @@ process differential_abundance {
 }
 
 process plot_abundance {
-    container 'nebfold/bioconductor'
+    container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
@@ -251,7 +252,7 @@ process plot_abundance {
 }
 
 process adjust_copynumber {
-    container 'nebfold/bioconductor'
+    container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
@@ -268,7 +269,7 @@ process adjust_copynumber {
 }
 
 process ordination {
-    container 'nebfold/bioconductor'
+    container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
@@ -295,16 +296,15 @@ process prediction {
 
 process qiime_picrust2 {
     container 'nebfold/picrust2'
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
     file first_feat_tab_pc
     file first_rep_seqs_pc
-    file second_feat_tab_pc
-    file second_rep_seqs_pc
 
     output:
     file "first_*.qza" into first_ko_picrust2
-    file "second_*.qza" into second_ko_picrust2
+    file "biom/feature-table.biom" into mc_biom
 
     """
     qiime picrust2 full-pipeline \
@@ -316,14 +316,58 @@ process qiime_picrust2 {
        --p-threads 24 \
        --p-hsp-method mp \
        --p-max-nsti 2
-    qiime picrust2 full-pipeline \
-       --i-table $second_feat_tab_pc \
-       --i-seq $second_rep_seqs_pc \
-       --o-ko-metagenome second_ko.qza \
-       --o-ec-metagenome second_ec.qza \
-       --o-pathway-abundance second_mc.qza \
-       --p-threads 24 \
-       --p-hsp-method mp \
-       --p-max-nsti 2 
+
+    qiime tools export \
+        --input-path first_mc.qza \
+        --output-path biom
+    """
+}
+
+process prepare_lefse {
+    container 'nebfold/bioc'
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+
+    input:
+    file ps_lefse
+    file mc_biom
+
+    output:
+    file 'lefse.txt' into lefse_input
+
+    """
+    lefse.R $ps_lefse $mc_biom
+    """
+}
+
+process lefse {
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+    container 'biobakery/lefse:0.0.1'
+
+    input:
+    file lefse_input
+
+    """
+    format_input.py $lefse_input /tmp/sws.in -c 2 -u 1 -o 1000000
+    run_lefse.py /tmp/sws.in /tmp/sws.res
+    plot_res.py /tmp/sws.res /tmp/sws.pdf --format pdf --dpi 300
+    # note to self: 
+    # docker run -v /path/to/workdir/:/home/linuxbrew/work -it biobakery/lefse /bin/bash
+    # plot_res.py work/sws.res sws.pdf --format pdf --dpi 300
+
+    """
+}
+
+process plot_picrust {
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+    container 'nebfold/bioc' 
+
+    input:
+    file lefse_csv
+
+    output:
+    file "picrust.pdf"
+
+    """
+    plot_picrust.R $lefse_csv
     """
 }

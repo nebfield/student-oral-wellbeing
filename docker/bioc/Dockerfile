@@ -10,3 +10,4 @@ RUN R -e 'BiocManager::install(c("DESeq2", "picante"))'
 RUN R -e 'devtools::install_github("r-lib/lifecycle")' # manual install fixes weird bug
 RUN apt-get install -y libpq-dev
 RUN R -e 'devtools::install_github(c("tidyverse/dplyr", "tidyverse/tidyr"), dependencies = T)'
+RUN R -e 'BiocManager::install("ALDEx2")'
