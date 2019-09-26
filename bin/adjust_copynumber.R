@@ -85,7 +85,7 @@ ps_copyadj <-
 # drop any taxa with all 0 reads after copy number adjustment
 ps_copyadj <-
   phyloseq::prune_taxa(phyloseq::taxa_sums(ps_copyadj) > 0, ps_copyadj)
-saveRDS(ps_copyadj, file = "ps_copyadj.rds")
+saveRDS(ps_copyadj, file = args[[2]])
 
 write.table(
   operons %>% tibble::rownames_to_column("seq") %>% select(copynum, seq),

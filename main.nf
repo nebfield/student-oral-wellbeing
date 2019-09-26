@@ -184,6 +184,7 @@ process qiime_phylogeny {
 
 process qiime_to_phyloseq {
     container 'nebfold/bioc'
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
     file first_feat_tab
@@ -192,7 +193,7 @@ process qiime_to_phyloseq {
     file first_sample_meta
 
     output:
-    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_first_pred, ps_lefse
+    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_lefse
 
     """
     qza_to_ps.R $first_feat_tab $first_rooted_tree $first_taxonomy $first_sample_meta
@@ -260,15 +261,16 @@ process adjust_copynumber {
     file ps_val_copynum
 
     output:
-    file "ps_copyadj.rds" into ps_copyadj
+    file "ps_copyadj.rds" into ps_copyadj, ps_copyadj_pred
+    file "ps_val_copyadj.rds" into ps_val_copyadj
 
     """
-    adjust_copynumber.R $ps_first_copynum
-    adjust_copynumber.R $ps_val_copynum
+    adjust_copynumber.R $ps_first_copynum ps_copyadj.rds
+    adjust_copynumber.R $ps_val_copynum ps_val_copyadj.rds
     """
 }
 
-process ordination {
+process plot_ordination {
     container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
@@ -280,17 +282,21 @@ process ordination {
     file "*.txt"
 
     """
-    plt_ordination.R $ps_copyadj
+    plot_ordination.R $ps_copyadj
     """
 }
 
 process prediction {
+    echo true
+    container 'nebfold/bioc'
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+
     input:
-    file ps_first_pred
+    file ps_copyadj_pred
+    file ps_val_copyadj
 
     """
-    # TODO!
-    # prediction.R $ps_first_pred ps_val
+    prediction.R $ps_copyadj_pred $ps_val_copyadj
     """
 }
 
