@@ -126,6 +126,7 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   geom_col(position = position_stack(reverse = TRUE)) +
   facet_wrap(~cohort, scales = "free",
              labeller=cohort_labeller) + 
+  scale_fill_brewer(palette = "Paired") +
   theme_bw() +
   xlab("Sample") +
   ylab("Relative abundance") + 
@@ -135,13 +136,17 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
 ggsave("family_abundance.png", width = 10, device = "png")
 
 sigbugs_ps <- phyloseq::prune_taxa(sigbugs$names, qiime_ra)
+sigbugs_p <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Phylum"]) %>%
+  tibble::rownames_to_column("taxID") 
 sigbugs_g <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Genus"]) %>%
   tibble::rownames_to_column("taxID") 
 sigbugs_tax <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Species"]) %>%
   tibble::rownames_to_column("taxID") %>%
   left_join(sigbugs_g) %>%
-  mutate(tax = ifelse(is.na(Species) | Species == "uncultured bacterium", paste(Genus), paste(Species))) %>%
-  mutate(tax = make.unique(tax, sep = "_"))
+  left_join(sigbugs_p) %>%
+  mutate(Species = na_if(Species, "uncultured bacterium")) %>%
+  mutate(tax = ifelse(is.na(Species), paste0(Genus), paste0(Species))) %>%
+  mutate(tax = make.unique(tax, sep = " "))
 
 sig_df <- data.frame(otu_table(sigbugs_ps)) %>%
   tibble::rownames_to_column("taxID") %>%
@@ -152,16 +157,19 @@ sig_df <- data.frame(otu_table(sigbugs_ps)) %>%
   group_by(tax) %>%
   mutate(y_max = max(value) + 0.01)
 
-ggplot(sig_df, aes(x = cohort, y = value)) +
-  geom_boxplot() +
-  facet_wrap(~tax, scales = "free_y") + 
+ggplot(sig_df, aes(x = cohort, y = value, fill = Phylum)) +
+  geom_violin() + 
+  geom_boxplot(width=0.1) +
+  facet_wrap(~tax, scales = "free_y", labeller = label_wrap_gen(width=26)) + 
   theme_bw() +
   xlab("Sample") +
   ylab("Relative abundance") + 
-  geom_jitter(position=position_jitter(0.2)) +
+  # geom_jitter(position=position_jitter(0.2)) +
   xlab("") +
   ylab("Relative abundance") + 
-  scale_y_continuous(labels = scales::percent) 
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Paired") +
+  theme_classic()
 # geom_blank(aes(y = y_max)) +
 # geom_signif(margin_top = 0.0001, comparisons = list(c("Depression", "Healthy"))) 
 

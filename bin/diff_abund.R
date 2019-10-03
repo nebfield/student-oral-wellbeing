@@ -11,6 +11,7 @@ ps <- readRDS(args[[1]])
 ps_trim <- phyloseq::subset_samples(ps, smoking != "Uncertain")
 
 rep_seqs <- qiime2R::read_qza(args[[2]])
+
 bss_to_df <- function(dss) {
   require("Biostrings")
   return(data.frame(width=width(dss), seq=as.character(dss), names=names(dss)))
@@ -65,23 +66,51 @@ sig_tidy <- sigtab %>%
   select(-width)
 write.csv(sig_tidy, "diff_abund.csv", row.names = FALSE, quote = FALSE) 
 
-sigtabgen <- sig_tidy
-# Phylum order
-x <- tapply(sigtabgen$log2FoldChange, sigtabgen$Phylum, function(x) max(x))
-x <- sort(x, TRUE)
-sigtabgen$Phylum <- factor(as.character(sigtabgen$Phylum), levels=names(x))
-# Genus order
-x <- tapply(sigtabgen$log2FoldChange, sigtabgen$Genus, function(x) max(x))
-x <- sort(x, TRUE)
-sigtabgen$Genus <- factor(as.character(sigtabgen$Genus), levels=names(x))
+sig_tidy %>%
+  mutate(Species = na_if(Species, "uncultured bacterium")) %>%
+  mutate(lab = ifelse(is.na(Species), paste0(Genus), paste0(Species))) %>%
+  mutate(lab = make.unique(lab, sep = " ")) %>%
+  mutate(Genus = as.factor(Genus)) %>%
+  tibble::as_tibble(.) -> sigtabgen
+
+# colour palette for loads of data
+# https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
+# colourCount = length(unique(sigtabgen$Genus))
+# getPalette = colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))
+
+# order bars from lowest to highest
+sigtabgen %>%
+  arrange(desc(log2FoldChange)) %>%
+  pull(lab) -> sig_order
+
+# rearrange x labels 
+sigtabgen$lab <- forcats::fct_relevel(sigtabgen$lab, as.character(sig_order))
+
+# rearrange legend form alphabetical to order of appearance (phylum) 
 sigtabgen$Phylum <-
-  factor(as.character(sigtabgen$Phylum, levels = sort(levels(sigtabgen$Phylum))))
-
-ggplot(sigtabgen, aes(y=Genus, x=log2FoldChange, color=Phylum)) + 
-  geom_vline(xintercept = 0.0, color = "gray", size = 0.5) +
-  geom_point(size=6) + 
-  theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5)) 
-
+  forcats::fct_relevel(
+    sigtabgen$Phylum,
+    c(
+      "Proteobacteria",
+      "Actinobacteria",
+      "Bacteroidetes",
+      "Spirochaetes",
+      "Firmicutes",
+      "Fusobacteria"
+    ))
+    
+ggplot(sigtabgen, aes(y=log2FoldChange, x=lab, fill=Phylum)) + 
+  geom_hline(yintercept = 0.0, color = "gray", size = 0.5) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  theme_classic() +
+  xlab("Amplicon sequence variant") + 
+  ylab(expression(Log["2"]*"-fold change")) + 
+  ggtitle("Healthy vs Depressed") + 
+  scale_fill_brewer(palette = "Paired") +
+  theme(text = element_text(size=12),
+        axis.text.y = element_text(face = "italic"))
+  
 ggsave("diff_abund.png", device = "png", width = 10)
 
 
