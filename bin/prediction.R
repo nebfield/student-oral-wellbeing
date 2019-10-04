@@ -62,7 +62,8 @@ dep_samp_df <-
     batch = phyloseq::sample_data(rel_dep_data)$batch
   )
 dep_df <- bind_cols(dep_samp_df, dep_tab) %>%
-  mutate(smoking = factor(smoking, levels = c("Never", "Daily")))
+  mutate(smoking = factor(smoking, levels = c("Never", "Daily"))) %>%
+  filter(!is.na(smoking))
 
 dep_df %>%
   filter(batch == "first_run") %>%

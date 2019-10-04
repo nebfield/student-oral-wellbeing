@@ -34,7 +34,8 @@ process qiime_import {
     mv $first_wave_forward first_wave/forward.fastq.gz
     mv $first_wave_reverse first_wave/reverse.fastq.gz
     mv $first_wave_index first_wave/barcodes.fastq.gz
-    qiime tools import \
+    # use env instead of nextflow's env commands (annoying docker bug)
+    env TMPDIR='/data/wp6/tmp' qiime tools import \
       --type EMPPairedEndSequences \
       --input-path first_wave/ \
       --output-path first_wave.qza
@@ -42,7 +43,7 @@ process qiime_import {
     mv $second_wave_forward second_wave/forward.fastq.gz
     mv $second_wave_reverse second_wave/reverse.fastq.gz
     mv $second_wave_index second_wave/barcodes.fastq.gz
-    qiime tools import \
+    env TMPDIR='/data/wp6/tmp' qiime tools import \
       --type EMPPairedEndSequences \
       --input-path second_wave/ \
       --output-path second_wave.qza
@@ -95,10 +96,10 @@ process qiime_denoise {
     file demuxed_second
 
     output:
-    file "first_feat_tab.qza" into first_feat_tab, first_feat_tab_pc
+    file "first_feat_tab_filt.qza" into first_feat_tab, first_feat_tab_pc, first_feat_tab_qc, first_feat_tab_ord
     file "first_rep_seqs.qza" into first_rep_seqs, first_rep_seqs_pg, first_rep_seqs_da, first_rep_seqs_pc
     file "first_stats.qza" into first_stats
-    file "second_feat_tab.qza" into second_feat_tab, second_feat_tab_pc
+    file "second_feat_tab.qza" into second_feat_tab, second_feat_tab_pc, second_feat_tab_qc
     file "second_rep_seqs.qza" into second_rep_seqs, second_rep_seqs_pg, second_rep_seqs_pc
     file "second_stats.qza" into second_stats
 
@@ -119,6 +120,18 @@ process qiime_denoise {
       --o-table second_feat_tab.qza \
       --o-representative-sequences second_rep_seqs.qza \
       --o-denoising-stats second_stats.qza
+
+    # filter from first batch (same as qza_to_ps.R)
+    echo SampleID > discard_samples.tsv
+    echo 238 >> discard_samples.tsv
+    echo 907 >> discard_samples.tsv
+    echo 763 >> discard_samples.tsv
+
+    qiime feature-table filter-samples \
+      --i-table first_feat_tab.qza \
+      --m-metadata-file discard_samples.tsv \
+      --p-exclude-ids \
+      --o-filtered-table first_feat_tab_filt.qza
     """
 }
 
@@ -160,7 +173,7 @@ process qiime_phylogeny {
 
     output:
     file "first_unrooted_tree.qza" into first_unrooted_tree
-    file "first_rooted_tree.qza" into first_rooted_tree
+    file "first_rooted_tree.qza" into first_rooted_tree, first_rooted_tree_ord
     file "second_unrooted_tree.qza" into second_unrooted_tree
     file "second_rooted_tree.qza" into second_rooted_tree
 
@@ -180,6 +193,28 @@ process qiime_phylogeny {
       --o-rooted-tree second_rooted_tree.qza \
       --p-n-threads 16
       """
+}
+
+process qiime_QC {
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+    container 'qiime2/core:2019.7'
+
+    input:
+    file first_feat_tab_qc
+    file second_feat_tab_qc
+
+    output:
+    file "first_qc/"
+    file "second_qc/"
+
+    """
+    qiime feature-table summarize \
+        --i-table $first_feat_tab_qc \
+        --output-dir first_qc/
+    qiime feature-table summarize \
+        --i-table $second_feat_tab_qc \
+        --output-dir second_qc/
+    """
 }
 
 process qiime_to_phyloseq {
@@ -216,6 +251,28 @@ process qiime_to_phyloseq_val {
     # TODO!
     qza_to_ps_val.R $second_feat_tab $second_rooted_tree \
       $second_taxonomy $second_sample_meta
+    """
+}
+
+process qiime_ordination {
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+    container 'qiime2/core:2019.7'
+
+    input:
+    file first_feat_tab_ord
+    file first_rooted_tree_ord
+    file first_sample_meta
+
+    output:
+    file "core-metrics-results/"
+
+    """
+    qiime diversity core-metrics-phylogenetic \
+      --i-phylogeny $first_rooted_tree_ord \
+      --i-table $first_feat_tab_ord \
+      --p-sampling-depth 28567 \
+      --m-metadata-file $first_sample_meta \
+      --output-dir core-metrics-results/
     """
 }
 
@@ -377,3 +434,4 @@ process plot_picrust {
     plot_picrust.R $lefse_csv
     """
 }
+
