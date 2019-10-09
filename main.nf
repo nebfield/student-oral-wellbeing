@@ -12,7 +12,7 @@ second_wave_map = file("/data/wp6/sws_microbiome/second_wave_n30/mappingfile_Uls
 second_sample_meta = file("/data/wp6/sws_microbiome/second_sample_meta.tsv")
 
 silva = file("/data/wp6/silva-132-99-nb-classifier.qza")
-lefse_csv = file("$baseDir/bootstrap/sws.csv")
+sws_res = file("$baseDir/bootstrap/sws.res")
 
 process qiime_import {
     container 'qiime2/core:2019.7'
@@ -404,34 +404,37 @@ process prepare_lefse {
 
 process lefse {
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
-    container 'biobakery/lefse:0.0.1'
+    conda 'biobakery::lefse' 
 
     input:
     file lefse_input
 
+    output:
+    file 'sws.res'
+    file 'sws.pdf'
+
     """
-    format_input.py $lefse_input /tmp/sws.in -c 2 -u 1 -o 1000000
-    run_lefse.py /tmp/sws.in /tmp/sws.res
-    plot_res.py /tmp/sws.res /tmp/sws.pdf --format pdf --dpi 300
+    format_input.py $lefse_input sws.in -c 2 -u 1 -o 1000000
+    run_lefse.py sws.in sws.res -a 0.01 -w 0.01 
+    plot_res.py sws.res sws.pdf --format pdf --dpi 300
     # note to self: 
     # docker run -v /path/to/workdir/:/home/linuxbrew/work -it biobakery/lefse /bin/bash
-    # plot_res.py work/sws.res sws.pdf --format pdf --dpi 300
-
     """
 }
 
 process plot_picrust {
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
-    container 'nebfold/bioc' 
+    conda 'biobakery::lefse' 
 
     input:
-    file lefse_csv
+    file sws_res
 
     output:
-    file "picrust.pdf"
+    file "sws_new.pdf"
 
     """
-    plot_picrust.R $lefse_csv
+    plot_res.py $sws_res sws_new.pdf --format pdf --dpi 300
+    # plot_picrust.R 
     """
 }
 
