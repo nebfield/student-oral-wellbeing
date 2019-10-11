@@ -318,7 +318,7 @@ process adjust_copynumber {
     file ps_val_copynum
 
     output:
-    file "ps_copyadj.rds" into ps_copyadj, ps_copyadj_pred
+    file "ps_copyadj.rds" into ps_copyadj, ps_copyadj_pred, ps_copyadj_ad
     file "ps_val_copyadj.rds" into ps_val_copyadj
 
     """
@@ -344,7 +344,6 @@ process plot_ordination {
 }
 
 process prediction {
-    echo true
     container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
@@ -422,19 +421,17 @@ process lefse {
     """
 }
 
-process plot_picrust {
+process alpha_diversity {
+    container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
-    conda 'biobakery::lefse' 
 
     input:
-    file sws_res
+    file ps_copyadj_ad
 
     output:
-    file "sws_new.pdf"
+    file "*.png"
 
     """
-    plot_res.py $sws_res sws_new.pdf --format pdf --dpi 300
-    # plot_picrust.R 
+    plot_alpha.R $ps_copyadj_ad
     """
 }
-

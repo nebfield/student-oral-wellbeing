@@ -32,7 +32,7 @@ label_map <- aes(x = 1.2 * CCA1, y = 1.2 * CCA2, color = NULL, shape = NULL, lab
 arrowhead <- arrow(length = unit(0.05, "npc"))
 
 ord_plot + 
-  scale_color_brewer(palette="Set1", direction = -1) +
+  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
   theme_classic() +
   geom_segment(
     arrow_map,
@@ -55,13 +55,14 @@ vegan::anova.cca(ord_log_cca, by = "terms")
 sink()
 
 ordu = phyloseq::ordinate(pslog, "PCoA", "bray")
-phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "sex") + 
-  scale_color_brewer(palette="Set1", direction = -1) +
+phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "sex") +
+  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
+  # scale_color_brewer(palette="Set1", direction = -1) +
   scale_shape_manual(values=c(19, 4)) + # 19: circle, 4: cross +
   theme_classic()
 ggsave("pcoa_sex.png", device = "png", width = 10)
 
-phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "age_bin") + 
-  scale_color_brewer(palette="Set1", direction = -1) +
+phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "age_bin") +
+  scale_color_manual(values=c("#B2DF8A", "#FB9A99"))
   theme_classic()
 ggsave("pcoa_age.png", device = "png", width = 10)
