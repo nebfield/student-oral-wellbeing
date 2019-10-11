@@ -157,9 +157,21 @@ sig_df <- data.frame(otu_table(sigbugs_ps)) %>%
   group_by(tax) %>%
   mutate(y_max = max(value) + 0.01)
 
+sig_df$Phylum <-
+  forcats::fct_relevel(
+    sig_df$Phylum,
+    c(
+      "Proteobacteria",
+      "Actinobacteria",
+      "Bacteroidetes",
+      "Spirochaetes",
+      "Firmicutes",
+      "Fusobacteria"
+    ))
+ 
 ggplot(sig_df, aes(x = cohort, y = value, fill = Phylum)) +
   geom_violin() + 
-  geom_boxplot(width=0.1) +
+  geom_boxplot(width=0.1, fill = "white") +
   facet_wrap(~tax, scales = "free_y", labeller = label_wrap_gen(width=26)) + 
   theme_bw() +
   xlab("Sample") +
@@ -168,7 +180,8 @@ ggplot(sig_df, aes(x = cohort, y = value, fill = Phylum)) +
   xlab("") +
   ylab("Relative abundance") + 
   scale_y_continuous(labels = scales::percent) +
-  scale_fill_brewer(palette = "Paired") +
+  scale_fill_manual(values=c("#B2DF8A", "#33A02C", "#A6CEE3", "#FF7F00", "#1F78B4", "#FB9A99")) + 
+  # scale_fill_brewer(palette = "Paired") +
   theme_classic()
 # geom_blank(aes(y = y_max)) +
 # geom_signif(margin_top = 0.0001, comparisons = list(c("Depression", "Healthy"))) 
