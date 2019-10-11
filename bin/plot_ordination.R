@@ -63,6 +63,6 @@ phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "sex") +
 ggsave("pcoa_sex.png", device = "png", width = 10)
 
 phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "age_bin") +
-  scale_color_manual(values=c("#B2DF8A", "#FB9A99"))
+  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
   theme_classic()
 ggsave("pcoa_age.png", device = "png", width = 10)
