@@ -49,49 +49,37 @@ estimated_operons_df <- data.frame(estimated_operons) %>%
 # combine known and estimated operon numbers
 operons <- rbind(known_operons_df, estimated_operons_df)
 
-
 # transform abundances and save to rdata file ----------------------------------
 
-# this function is probably far too complicated but I'm not smart enough to
-# think of a simpler way to do it
-adjust_copy_number <- function(x, ...) {
-  args <- list(...)
-  operons <- data.frame(args$operons) %>% tibble::rownames_to_column("seq")
-  sample_df <- data.frame(abund = x) %>% tibble::rownames_to_column("seq")
-  joined <- dplyr::left_join(sample_df, operons, by = "seq")
-
-  # phyloseq uses dummy data to test validity of a user-defined function: 1:10
-  # the join fails to add a copynum column to this dummy data, which will
-  # cause the mutate below to break
-  if (!("copynum" %in% names(joined))) {
-    joined$copynum <- 1:10
-  }
-
-  # round to 0 digits to maintain counts
-  copynum_adj <-
-    dplyr::mutate(joined, abund_adj = round(abund / copynum, digits = 0)) %>%
-    select(seq, abund_adj) %>%
-    tibble::column_to_rownames("seq") %>%
-    picante::df2vec()
-
-  return(copynum_adj)
+adj_copynum <- function(observed, copynum) {
+  return(round(observed / copynum, digits = 0))
 }
 
-ps_copyadj <-
-  phyloseq::transform_sample_counts(ps_data,
-                                    adjust_copy_number,
-                                    operons = operons)
+otu <- bind_cols(data.frame(phyloseq::otu_table(ps_data)), operons)
+otu %>%
+  group_by(copynum) %>%
+  mutate_at(vars(-group_cols()), list(~ adj_copynum(., copynum))) %>%
+  ungroup() %>%
+  select(-copynum) -> adj_otu
+
+adj_otu_ps <- phyloseq::otu_table(data.matrix(adj_otu), taxa_are_rows = TRUE)
+rownames(adj_otu_ps) <- phyloseq::taxa_names(ps_data)
+colnames(adj_otu_ps) <- phyloseq::sample_names(ps_data) 
+ps_copyadj <- ps_data 
+phyloseq::otu_table(ps_copyadj) <- phyloseq::otu_table(adj_otu_ps)
+
+data.frame(
+  orig_count = phyloseq::taxa_sums(ps_data),
+  adj_count = phyloseq::taxa_sums(ps_copyadj),
+  copynum = operons$copynum
+) %>%
+  tibble::rownames_to_column("id") %>%
+  tibble::as_tibble(.) %>%
+  arrange(desc(copynum)) -> adj_log
+
+write.csv(adj_log, file = "adj_log.csv", quote = FALSE, row.names = FALSE)
 
 # drop any taxa with all 0 reads after copy number adjustment
 ps_copyadj <-
   phyloseq::prune_taxa(phyloseq::taxa_sums(ps_copyadj) > 0, ps_copyadj)
 saveRDS(ps_copyadj, file = args[[2]])
-
-write.table(
-  operons %>% tibble::rownames_to_column("seq") %>% select(copynum, seq),
-  file = "copynumber.tsv",
-  sep = "\t",
-  quote = FALSE,
-  row.names = FALSE
-)
-

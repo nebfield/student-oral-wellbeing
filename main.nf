@@ -310,6 +310,7 @@ process plot_abundance {
 }
 
 process adjust_copynumber {
+    echo true
     container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
@@ -320,10 +321,11 @@ process adjust_copynumber {
     output:
     file "ps_copyadj.rds" into ps_copyadj, ps_copyadj_pred, ps_copyadj_ad
     file "ps_val_copyadj.rds" into ps_val_copyadj
+    file "adj_log.csv"
 
     """
-    adjust_copynumber.R $ps_first_copynum ps_copyadj.rds
-    adjust_copynumber.R $ps_val_copynum ps_val_copyadj.rds
+    adjust_copynumber.R $ps_first_copynum ps_copyadj.rds 
+    adjust_copynumber.R $ps_val_copynum ps_val_copyadj.rds 
     """
 }
 
