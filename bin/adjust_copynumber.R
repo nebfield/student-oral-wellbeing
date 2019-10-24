@@ -9,6 +9,9 @@ library("tidyverse")
 
 # parameters -------------------------------------------------------------------
 # 1: path to phyloseq object (rdata file) ps_data
+# 2: path to output file (rds)
+# 3: path to adjustment log
+
 args <- commandArgs(trailingOnly = TRUE)
 
 ps_data <- readRDS(args[[1]])
@@ -49,6 +52,8 @@ estimated_operons_df <- data.frame(estimated_operons) %>%
 # combine known and estimated operon numbers
 operons <- rbind(known_operons_df, estimated_operons_df)
 
+write.csv(operons, "operons.csv", quote = FALSE)
+
 # transform abundances and save to rdata file ----------------------------------
 
 adj_copynum <- function(observed, copynum) {
@@ -77,7 +82,7 @@ data.frame(
   tibble::as_tibble(.) %>%
   arrange(desc(copynum)) -> adj_log
 
-write.csv(adj_log, file = "adj_log.csv", quote = FALSE, row.names = FALSE)
+write.csv(adj_log, file = args[[3]], quote = FALSE, row.names = FALSE)
 
 # drop any taxa with all 0 reads after copy number adjustment
 ps_copyadj <-

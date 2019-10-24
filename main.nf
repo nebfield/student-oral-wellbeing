@@ -227,7 +227,7 @@ process qiime_to_phyloseq {
     file first_sample_meta
 
     output:
-    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_lefse
+    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_lefse, ps_first_ord, ps_first_pred, ps_first_ad
     file "samp_dat.tsv" into first_samp_dat
 
     """
@@ -245,10 +245,9 @@ process qiime_to_phyloseq_val {
     file second_sample_meta
 
     output:
-    file "ps_second.rds" into ps_val_copynum
+    file "ps_second.rds" into ps_val_pred
 
     """
-    # TODO!
     qza_to_ps_val.R $second_feat_tab $second_rooted_tree \
       $second_taxonomy $second_sample_meta
     """
@@ -309,39 +308,19 @@ process plot_abundance {
     """
 }
 
-process adjust_copynumber {
-    echo true
-    container 'nebfold/bioc'
-    publishDir "$baseDir/results", mode: 'copy', overwrite: true
-
-    input:
-    file ps_first_copynum
-    file ps_val_copynum
-
-    output:
-    file "ps_copyadj.rds" into ps_copyadj, ps_copyadj_pred, ps_copyadj_ad
-    file "ps_val_copyadj.rds" into ps_val_copyadj
-    file "adj_log.csv"
-
-    """
-    adjust_copynumber.R $ps_first_copynum ps_copyadj.rds 
-    adjust_copynumber.R $ps_val_copynum ps_val_copyadj.rds 
-    """
-}
-
 process plot_ordination {
     container 'nebfold/bioc'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
-    file ps_copyadj
+    file ps_first_ord
 
     output:
     file "*.png"
     file "*.txt"
 
     """
-    plot_ordination.R $ps_copyadj
+    plot_ordination.R $ps_first_ord
     """
 }
 
@@ -350,14 +329,14 @@ process prediction {
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
-    file ps_copyadj_pred
-    file ps_val_copyadj
+    file ps_first_pred
+    file ps_val_pred
 
     output:
     file "prediction.txt"
 
     """
-    prediction.R $ps_copyadj_pred $ps_val_copyadj
+    prediction.R $ps_first_pred $ps_val_pred 
     """
 }
 
@@ -431,41 +410,12 @@ process alpha_diversity {
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
-    file ps_copyadj_ad
+    file ps_first_ad
 
     output:
     file "*.png"
 
     """
-    plot_alpha.R $ps_copyadj_ad
-    """
-}
-
-process qiime_sample_classifier {
-    container 'qiime2/core:2019.7'
-    publishDir "$baseDir/results", mode: 'copy', overwrite: true
-
-    input:
-    file first_feat_tab_pred
-    file first_samp_dat
-
-    output:
-    file "predictions/"
-
-    """
-    echo SampleID > discard_samples.tsv
-    echo 232 >> discard_samples.tsv
-    echo 708 >> discard_samples.tsv
-    echo 1871 >> discard_samples.tsv
-    echo 445 >> discard_samples.tsv
-    echo 1221 >> discard_samples.tsv
-
-    qiime feature-table filter-samples \
-      --i-table $first_feat_tab_pred \
-      --m-metadata-file discard_samples.tsv \
-      --p-exclude-ids \
-      --o-filtered-table first_feat_tab_filt.qza
-
-    qiime sample-classifier classify-samples --i-table first_feat_tab_filt.qza --m-metadata-file $first_samp_dat --m-metadata-column cohort --output-dir predictions/
+    plot_alpha.R $ps_first_ad
     """
 }
