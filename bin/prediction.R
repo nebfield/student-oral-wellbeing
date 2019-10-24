@@ -114,9 +114,9 @@ model <-
     allowParallel = FALSE # parallel messes up seed
   )
 
-#sink("prediction.txt")
+sink("prediction.txt")
 OmicsMarkeR::performance.metrics(model)
-#sink()
 
 preds <- OmicsMarkeR::predictNewClasses(model, method = "rf", train_df, test_df[, -1])
 caret::confusionMatrix(preds$predictedClass, test_df[, 1], positive = "Depression")
+sink()

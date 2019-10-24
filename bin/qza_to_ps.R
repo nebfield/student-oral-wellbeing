@@ -62,3 +62,7 @@ ps_pruned <- phyloseq::subset_taxa(ps_pruned, !is.na(Phylum))
 phyloseq::sample_data(ps_pruned)$cohort <- relevel(phyloseq::sample_data(ps_pruned)$cohort, "Healthy")
 
 saveRDS(ps_pruned, file = "ps_first.rds")
+
+form_sd <- data.frame(phyloseq::sample_data(ps_pruned)) %>%
+  tibble::rownames_to_column("id")
+write.table(form_sd, "samp_dat.tsv", quote = FALSE, row.names = FALSE, sep = "\t") 

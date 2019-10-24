@@ -12,7 +12,6 @@ second_wave_map = file("/data/wp6/sws_microbiome/second_wave_n30/mappingfile_Uls
 second_sample_meta = file("/data/wp6/sws_microbiome/second_sample_meta.tsv")
 
 silva = file("/data/wp6/silva-132-99-nb-classifier.qza")
-sws_res = file("$baseDir/bootstrap/sws.res")
 
 process qiime_import {
     container 'qiime2/core:2019.7'
@@ -96,7 +95,7 @@ process qiime_denoise {
     file demuxed_second
 
     output:
-    file "first_feat_tab_filt.qza" into first_feat_tab, first_feat_tab_pc, first_feat_tab_qc, first_feat_tab_ord
+    file "first_feat_tab_filt.qza" into first_feat_tab, first_feat_tab_pc, first_feat_tab_qc, first_feat_tab_ord, first_feat_tab_pred
     file "first_rep_seqs.qza" into first_rep_seqs, first_rep_seqs_pg, first_rep_seqs_da, first_rep_seqs_pc
     file "first_stats.qza" into first_stats
     file "second_feat_tab.qza" into second_feat_tab, second_feat_tab_pc, second_feat_tab_qc
@@ -229,6 +228,7 @@ process qiime_to_phyloseq {
 
     output:
     file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_copynum, ps_lefse
+    file "samp_dat.tsv" into first_samp_dat
 
     """
     qza_to_ps.R $first_feat_tab $first_rooted_tree $first_taxonomy $first_sample_meta
@@ -353,6 +353,9 @@ process prediction {
     file ps_copyadj_pred
     file ps_val_copyadj
 
+    output:
+    file "prediction.txt"
+
     """
     prediction.R $ps_copyadj_pred $ps_val_copyadj
     """
@@ -435,5 +438,34 @@ process alpha_diversity {
 
     """
     plot_alpha.R $ps_copyadj_ad
+    """
+}
+
+process qiime_sample_classifier {
+    container 'qiime2/core:2019.7'
+    publishDir "$baseDir/results", mode: 'copy', overwrite: true
+
+    input:
+    file first_feat_tab_pred
+    file first_samp_dat
+
+    output:
+    file "predictions/"
+
+    """
+    echo SampleID > discard_samples.tsv
+    echo 232 >> discard_samples.tsv
+    echo 708 >> discard_samples.tsv
+    echo 1871 >> discard_samples.tsv
+    echo 445 >> discard_samples.tsv
+    echo 1221 >> discard_samples.tsv
+
+    qiime feature-table filter-samples \
+      --i-table $first_feat_tab_pred \
+      --m-metadata-file discard_samples.tsv \
+      --p-exclude-ids \
+      --o-filtered-table first_feat_tab_filt.qza
+
+    qiime sample-classifier classify-samples --i-table first_feat_tab_filt.qza --m-metadata-file $first_samp_dat --m-metadata-column cohort --output-dir predictions/
     """
 }
