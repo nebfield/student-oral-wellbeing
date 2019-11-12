@@ -32,8 +32,8 @@ label_map <- aes(x = 1.2 * CCA1, y = 1.2 * CCA2, color = NULL, shape = NULL, lab
 arrowhead <- arrow(length = unit(0.05, "npc"))
 
 ord_plot + 
-  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
-  theme_classic() +
+  scale_color_manual(values=c("#4daf4a", "#e41a1c")) +
+  theme_linedraw() + 
   geom_segment(
     arrow_map,
     size = 0.5,
@@ -43,8 +43,10 @@ ord_plot +
   ) + 
   geom_text(label_map, size = 4, data = arrowdf) +
   stat_ellipse(type = "norm", linetype = 2) +
-  labs(color='Cohort', shape = "Cohort") + 
-  scale_shape_manual(values=c(19, 4)) # 19: circle, 4: cross
+  labs(color='Cohort', shape = "Cohort") +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14,face="bold"))
+  # scale_shape_manual(values=c(19, 4)) # 19: circle, 4: cross
 
 # Ordination ellipse https://github.com/joey711/phyloseq/issues/323
 
@@ -59,10 +61,10 @@ phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "sex") +
   scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
   # scale_color_brewer(palette="Set1", direction = -1) +
   scale_shape_manual(values=c(19, 4)) + # 19: circle, 4: cross +
-  theme_classic()
+  theme_linedraw()
 ggsave("pcoa_sex.png", device = "png", width = 10)
 
 phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "age_bin") +
-  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
-  theme_classic()
+  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) +
+  theme_linedraw()
 ggsave("pcoa_age.png", device = "png", width = 10)

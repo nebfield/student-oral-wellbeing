@@ -83,11 +83,13 @@ ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
   facet_wrap(~cohort, scales = "free",
              labeller=cohort_labeller) + 
   scale_fill_brewer(palette = "Paired") +
-  theme_bw() +
   xlab("Sample") +
   ylab("Relative abundance") + 
   scale_y_continuous(labels = scales::percent) + 
-  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 44, by = 1))
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 44, by = 1)) +
+  theme_linedraw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+
 
 ggsave("phyla_abundance.png", width = 10, device = "png")
 
@@ -127,13 +129,14 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   facet_wrap(~cohort, scales = "free",
              labeller=cohort_labeller) + 
   scale_fill_brewer(palette = "Paired") +
-  theme_bw() +
+  theme_linedraw() + 
   xlab("Sample") +
   ylab("Relative abundance") + 
   scale_y_continuous(labels = scales::percent) + 
-  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 44, by = 1))
+  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 44, by = 1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
 
-ggsave("family_abundance.png", width = 10, device = "png")
+ggsave("family_abundance.png", width = 15, device = "png")
 
 sigbugs_ps <- phyloseq::prune_taxa(sigbugs$names, qiime_ra)
 sigbugs_p <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Phylum"]) %>%
@@ -172,18 +175,18 @@ sig_df$Phylum <-
 ggplot(sig_df, aes(x = cohort, y = value, fill = Phylum)) +
   geom_violin() + 
   geom_boxplot(width=0.1, fill = "white") +
-  facet_wrap(~tax, scales = "free_y", labeller = label_wrap_gen(width=26)) + 
-  theme_bw() +
+  facet_wrap(~tax, scales = "free_y", labeller = label_wrap_gen(width=26)) +
+  theme_linedraw() + 
   xlab("Sample") +
   ylab("Relative abundance") + 
   # geom_jitter(position=position_jitter(0.2)) +
   xlab("") +
   ylab("Relative abundance") + 
   scale_y_continuous(labels = scales::percent) +
-  scale_fill_manual(values=c("#B2DF8A", "#33A02C", "#A6CEE3", "#FF7F00", "#1F78B4", "#FB9A99")) + 
-  # scale_fill_brewer(palette = "Paired") +
-  theme_classic()
+  scale_fill_manual(values=c("#B2DF8A", "#33A02C", "#A6CEE3", "#FF7F00", "#1F78B4", "#FB9A99")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  # scale_fill_brewer(palette = "Paired") 
 # geom_blank(aes(y = y_max)) +
 # geom_signif(margin_top = 0.0001, comparisons = list(c("Depression", "Healthy"))) 
 
-ggsave("species_abundance.png", width = 10, device = "png")
+ggsave("species_abundance.png", width = 15, device = "png")

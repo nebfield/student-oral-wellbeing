@@ -21,7 +21,7 @@ ggplot(ad$data, aes(x = cohort, y = value, fill = cohort)) +
   geom_violin() + 
   facet_wrap(~variable, scales = "free") +
   geom_jitter(height = 0, width = 0.1, color = "black") +
-  theme_classic() + 
+  theme_linedraw() + 
   xlab("") + 
   ylab("Alpha diversity measure") + 
   labs(fill = "Cohort") +

@@ -103,7 +103,7 @@ ggplot(sigtabgen, aes(y=log2FoldChange, x=lab, fill=Phylum)) +
   geom_hline(yintercept = 0.0, color = "gray", size = 0.5) +
   geom_bar(stat = "identity") +
   coord_flip() +
-  theme_classic() +
+  theme_linedraw() + 
   xlab("Amplicon sequence variant") + 
   ylab(expression(Log["2"]*"-fold change")) + 
   ggtitle("Healthy vs Depressed") + 
