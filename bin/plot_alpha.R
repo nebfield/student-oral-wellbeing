@@ -14,8 +14,6 @@ ad <- ad + geom_violin() +
   geom_jitter(height = 0, width = 0.1, color = "black") +
   theme_classic() + 
   xlab("")
-RColorBrewer::brewer.pal(12, "Paired")
-RColorBrewer::display.brewer.pal(12, "Paired")
 
 ggplot(ad$data, aes(x = cohort, y = value, fill = cohort)) + 
   geom_violin() + 
@@ -25,8 +23,9 @@ ggplot(ad$data, aes(x = cohort, y = value, fill = cohort)) +
   xlab("") + 
   ylab("Alpha diversity measure") + 
   labs(fill = "Cohort") +
-  # scale_fill_brewer(palette="Paired", direction = -1) +
-  scale_fill_manual(values=c("#B2DF8A", "#FB9A99"))
+  scale_fill_manual(values=c("#66C2A5", "#FC8D62")) 
+  # scale_fill_brewer(palette="Set2", direction = 1) 
+  # scale_fill_manual(values=c("#B2DF8A", "#FB9A99"))
 
 ggsave("alpha_diversity.png", device = "png", width = 10)
 

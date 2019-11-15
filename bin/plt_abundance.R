@@ -85,13 +85,14 @@ ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
   scale_fill_brewer(palette = "Paired") +
   xlab("Sample") +
   ylab("Relative abundance") + 
-  scale_y_continuous(labels = scales::percent) + 
-  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 44, by = 1)) +
+  scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
+  scale_x_continuous(expand = c(0, 0)) + 
   theme_linedraw() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
+  # theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
 
 
-ggsave("phyla_abundance.png", width = 10, device = "png")
+ggsave("phyla_abundance.png", width = 12, device = "png")
 
 fam_df <- data.frame(otu_table(fam)) %>%
   tibble::rownames_to_column("taxID") %>%
@@ -108,7 +109,7 @@ top_family <- fam_df %>%
   top_n(9) %>%
   pull(Family) 
 
-fam_df$Family <- droplevels(fct_other(fam_df$Family, keep = top_family, other_level = "Other (n=40)"))
+fam_df$Family <- droplevels(fct_other(fam_df$Family, keep = top_family, other_level = "Other"))
 
 fam_df %>%
   group_by(Family) %>%
@@ -132,11 +133,11 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   theme_linedraw() + 
   xlab("Sample") +
   ylab("Relative abundance") + 
-  scale_y_continuous(labels = scales::percent) + 
-  scale_x_continuous(expand = c(0, 0), breaks = seq(0, 44, by = 1)) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
+  scale_x_continuous(expand = c(0, 0)) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
 
-ggsave("family_abundance.png", width = 15, device = "png")
+ggsave("family_abundance.png", width = 12, device = "png")
 
 sigbugs_ps <- phyloseq::prune_taxa(sigbugs$names, qiime_ra)
 sigbugs_p <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Phylum"]) %>%
@@ -189,4 +190,4 @@ ggplot(sig_df, aes(x = cohort, y = value, fill = Phylum)) +
 # geom_blank(aes(y = y_max)) +
 # geom_signif(margin_top = 0.0001, comparisons = list(c("Depression", "Healthy"))) 
 
-ggsave("species_abundance.png", width = 15, device = "png")
+ggsave("species_abundance.png", width = 12, device = "png")

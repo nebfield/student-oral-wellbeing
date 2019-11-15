@@ -32,20 +32,20 @@ label_map <- aes(x = 1.2 * CCA1, y = 1.2 * CCA2, color = NULL, shape = NULL, lab
 arrowhead <- arrow(length = unit(0.05, "npc"))
 
 ord_plot + 
-  scale_color_manual(values=c("#4daf4a", "#e41a1c")) +
-  theme_linedraw() + 
+  scale_color_manual(values=c("#66c2a5", "#fc8d62")) + 
   geom_segment(
     arrow_map,
-    size = 0.5,
+    size = 1.5,
     data = arrowdf,
-    color = "gray",
-    arrow = arrowhead
+    color = "black",
+    arrow = NULL # arrowhead
   ) + 
   geom_text(label_map, size = 4, data = arrowdf) +
   stat_ellipse(type = "norm", linetype = 2) +
   labs(color='Cohort', shape = "Cohort") +
+  theme_linedraw()  
   theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=14,face="bold"))
+        axis.title=element_text(size=14,face="bold")) 
   # scale_shape_manual(values=c(19, 4)) # 19: circle, 4: cross
 
 # Ordination ellipse https://github.com/joey711/phyloseq/issues/323
