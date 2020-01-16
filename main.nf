@@ -413,7 +413,8 @@ process alpha_diversity {
     file ps_first_ad
 
     output:
-    file "*.png"
+    file "*.png"  
+    file "*.txt"
 
     """
     plot_alpha.R $ps_first_ad

@@ -9,7 +9,7 @@ args <- commandArgs(trailingOnly = TRUE)
 
 ps_data <- readRDS(args[[1]])
 
-ad <- plot_richness(ps_data, x="cohort", measures=c("Shannon", "InvSimpson", "ACE")) 
+ad <- plot_richness(ps_data, x="cohort", measures=c("Observed", "InvSimpson", "Shannon")) 
 ad <- ad + geom_violin() +
   geom_jitter(height = 0, width = 0.1, color = "black") +
   theme_classic() + 
@@ -32,6 +32,9 @@ ggsave("alpha_diversity.png", device = "png", width = 10)
 d <- ad$data %>%
   group_split(variable, cohort) 
 
+sink("alpha.txt")
+print(d)
 t.test(d[[1]]$value, d[[2]]$value)
 t.test(d[[3]]$value, d[[4]]$value)
 t.test(d[[5]]$value, d[[6]]$value)
+sink()
