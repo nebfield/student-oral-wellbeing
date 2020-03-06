@@ -4,19 +4,12 @@ library("tidyverse")
 
 # parameters -------------------------------------------------------------------
 # 1: phyloseq rds
-# 2: representative sequences (FeatureData[Sequence])
+# 2: representative sequences dataframe
 args <- commandArgs(trailingOnly = TRUE)
 
 ps <- readRDS(args[[1]])
 ps_trim <- phyloseq::subset_samples(ps, smoking != "Uncertain")
-
-rep_seqs <- qiime2R::read_qza(args[[2]])
-
-bss_to_df <- function(dss) {
-  require("Biostrings")
-  return(data.frame(width=width(dss), seq=as.character(dss), names=names(dss)))
-}
-seq_hash <- bss_to_df(rep_seqs$data)
+seq_hash <- readRDS(args[[2]])
 
 # check prevalence -------------------------------------------------------------
 prev <- apply(X = phyloseq::otu_table(ps_trim), MARGIN =
@@ -113,5 +106,6 @@ ggplot(sigtabgen, aes(y=log2FoldChange, x=lab, fill=Phylum)) +
         axis.text.y = element_text(face = "italic"))
   
 ggsave("diff_abund.png", device = "png", width = 10)
+ggsave("diff_abund.svg", device = "svg", width = 10)
 
 

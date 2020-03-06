@@ -28,6 +28,7 @@ ggplot(ad$data, aes(x = cohort, y = value, fill = cohort)) +
   # scale_fill_manual(values=c("#B2DF8A", "#FB9A99"))
 
 ggsave("alpha_diversity.png", device = "png", width = 10)
+ggsave("alpha_diversity.svg", device = "svg", width = 10)
 
 d <- ad$data %>%
   group_split(variable, cohort) 

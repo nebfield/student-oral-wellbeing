@@ -8,7 +8,7 @@ library("tidyverse")
 # 2: significant bugs csv 
 args <- commandArgs(trailingOnly = TRUE)
 
-qiime <- readRDS(args[[1]])
+qiime <- readRDS(args[[1]]) 
 sigbugs <- read.csv(args[[2]], stringsAsFactors = FALSE)
 
 qiime_ra <- phyloseq::transform_sample_counts(qiime, function(x) x / sum(x))
@@ -93,6 +93,8 @@ ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
 
 
 ggsave("phyla_abundance.png", width = 12, device = "png")
+ggsave("phyla_abundance.svg", width = 12, device = "svg")
+
 
 fam_df <- data.frame(otu_table(fam)) %>%
   tibble::rownames_to_column("taxID") %>%
@@ -138,6 +140,7 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
 
 ggsave("family_abundance.png", width = 12, device = "png")
+ggsave("family_abundance.svg", width = 12, device = "svg")
 
 sigbugs_ps <- phyloseq::prune_taxa(sigbugs$names, qiime_ra)
 sigbugs_p <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Phylum"]) %>%
@@ -191,3 +194,4 @@ ggplot(sig_df, aes(x = cohort, y = value, fill = Phylum)) +
 # geom_signif(margin_top = 0.0001, comparisons = list(c("Depression", "Healthy"))) 
 
 ggsave("species_abundance.png", width = 12, device = "png")
+ggsave("species_abundance.svg", width = 12, device = "svg")

@@ -51,6 +51,8 @@ ord_plot +
 # Ordination ellipse https://github.com/joey711/phyloseq/issues/323
 
 ggsave("cohort-cca.png", device = "png", width = 10)
+ggsave("cohort-cca.svg", device = "svg", width = 10)
+
 
 sink("cca.txt")
 vegan::anova.cca(ord_log_cca, by = "terms")

@@ -50,6 +50,7 @@ ggplot(sws_other, aes(x = description, y = lda, label = description, fill = coho
   theme(text = element_text(size=22))
 
 ggsave("picrust.pdf", device = "pdf", width = 25, height = 40)
+ggsave("picrust.svg", device = "svg", width = 25, height = 40)
 
 # save each facet individually
 # Create a separate plot for each value of cyl, and store each plot in a list
