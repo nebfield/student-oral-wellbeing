@@ -24,23 +24,23 @@ ggplot(df, aes(x = cohort, y = value, fill = cohort)) +
   theme(legend.position = "none")
 ggsave("alpha_diversity.png", device = "png")
 
-# Inverse Simpson is a nicer measure of alpha diversity  
-# but it's not normally distributed - right tail 
 df %>%
-  filter(variable == "InvSimpson") %>%
+  filter(variable == "Shannon") %>%
   ggplot(., aes(x = value)) +
     geom_histogram()
 
 sink("alpha.txt")
 df %>%
-  filter(variable == "InvSimpson") %>%
+  filter(variable == "Shannon") %>%
   pull(value) %>%
   shapiro.test(.)
 
 df %>%
-  filter(variable == "InvSimpson") %>%
+  filter(variable == "Shannon") %>%
   select(cohort, value) -> dat
 
+var.test(value ~ cohort, dat, alternative = "two.sided")
 
-wilcox.test(value ~ cohort, data = dat)
+# Welch's t test is OK for unequal variance
+t.test(value ~ cohort, data = dat)
 sink() 
