@@ -7,7 +7,7 @@ library("phyloseq")
 # 1: copyadjusted phyloseq rds
 args <- commandArgs(trailingOnly = TRUE)
 
-ps_data <- readRDS("ps_first.rds")
+ps_data <- readRDS(args[[1]])
 
 ad <- plot_richness(ps_data, x="cohort", measures=c("Observed", "InvSimpson", "Shannon")) 
 df <- ad$data # just want the raw data
