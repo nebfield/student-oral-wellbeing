@@ -43,30 +43,28 @@ ord_plot +
   geom_text(label_map, size = 4, data = arrowdf) +
   stat_ellipse(type = "norm", linetype = 2) +
   labs(color='Cohort', shape = "Cohort") +
-  theme_linedraw()  
+  theme_bw() 
   theme(axis.text=element_text(size=12),
         axis.title=element_text(size=14,face="bold")) 
   # scale_shape_manual(values=c(19, 4)) # 19: circle, 4: cross
 
 # Ordination ellipse https://github.com/joey711/phyloseq/issues/323
 
-ggsave("cohort-cca.png", device = "png", width = 10)
-ggsave("cohort-cca.svg", device = "svg", width = 10)
+ggsave("cohort-cca.png", device = "png", dpi = 600)
+ggsave("cohort-cca.svg", device = "svg")
 
 
+# terms
 sink("cca.txt")
+vegan::anova.cca(ord_log_cca) # overall solution significant
 vegan::anova.cca(ord_log_cca, by = "terms")
 sink()
 
-ordu = phyloseq::ordinate(pslog, "PCoA", "bray")
-phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "sex") +
-  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) + 
-  # scale_color_brewer(palette="Set1", direction = -1) +
-  scale_shape_manual(values=c(19, 4)) + # 19: circle, 4: cross +
-  theme_linedraw()
-ggsave("pcoa_sex.png", device = "png", width = 10)
-
-phyloseq::plot_ordination(pslog, ordu, color="cohort", shape = "age_bin") +
-  scale_color_manual(values=c("#B2DF8A", "#FB9A99")) +
-  theme_linedraw()
-ggsave("pcoa_age.png", device = "png", width = 10)
+ordu <- phyloseq::ordinate(pslog, "PCoA", "bray")
+phyloseq::plot_ordination(pslog, ordu, color = "cohort") + 
+  scale_color_manual(values=c("#66C2A5", "#FC8D62")) +
+  stat_ellipse(type = "norm", linetype = 2) +
+  theme_bw() + 
+  labs(color = "Cohort")
+ggsave("pcoa.png", device = "png", dpi = 600)
+ggsave("pcoa.svg", device = "svg")
