@@ -415,7 +415,6 @@ process alpha_diversity {
     file ps_first_ad
 
     output:
-    file "*.png"
     file "*.svg"
     file "*.txt"
 

@@ -16,13 +16,15 @@ ggplot(df, aes(x = cohort, y = value, fill = cohort)) +
   geom_boxplot() + 
   facet_wrap(~variable, scales = "free") +
   geom_jitter(height = 0, width = 0.1, color = "black") +
-  theme_bw() + 
-  xlab("") + 
+  theme_bw() +
+  xlab("Cohort") + 
   ylab("Alpha diversity measure") + 
   labs(fill = "Cohort") +
   scale_fill_manual(values=c("#66C2A5", "#FC8D62")) +
-  theme(legend.position = "none")
-ggsave("alpha_diversity.png", device = "png")
+  theme(legend.position = "none", 
+	text = element_text(size=20, face = "bold"),
+	axis.text.x = element_text(size = 12, face = "bold")) +
+ggsave("alpha_diversity.svg", device = "svg")
 
 df %>%
   filter(variable == "Shannon") %>%
