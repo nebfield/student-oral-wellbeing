@@ -24,7 +24,7 @@ ord_log_cca <- phyloseq::ordinate(
   formula = pslog ~ cohort + smoking
 )
 
-ord_plot <- phyloseq::plot_ordination(pslog, ord_log_cca, color = "cohort", shape = "cohort")
+ord_plot <- phyloseq::plot_ordination(pslog, ord_log_cca, color = "cohort")
 arrowmat <- vegan::scores(ord_log_cca, display = "bp")
 arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
 arrow_map <- aes(xend = CCA1, yend = CCA2, x = 0, y = 0, color = NULL, shape = NULL)
@@ -33,25 +33,21 @@ arrowhead <- arrow(length = unit(0.05, "npc"))
 
 ord_plot + 
   scale_color_manual(values=c("#66c2a5", "#fc8d62")) + 
-  geom_segment(
-    arrow_map,
-    size = 1.5,
-    data = arrowdf,
-    color = "black",
-    arrow = NULL # arrowhead
-  ) + 
+  geom_segment(arrow_map, size = 1.5, data = arrowdf, color = "black",
+    arrow = NULL) +
   geom_text(label_map, size = 4, data = arrowdf) +
   stat_ellipse(type = "norm", linetype = 2) +
   labs(color='Cohort', shape = "Cohort") +
-  theme_bw() 
-  theme(axis.text=element_text(size=12),
-        axis.title=element_text(size=14,face="bold")) 
-  # scale_shape_manual(values=c(19, 4)) # 19: circle, 4: cross
+  theme_bw() +
+  theme(axis.text=element_text(size=20, face = "bold"),
+        axis.title=element_text(size=20,face="bold"),
+	legend.position = "none") +
+  coord_fixed()
 
 # Ordination ellipse https://github.com/joey711/phyloseq/issues/323
 
 ggsave("cohort-cca.png", device = "png", dpi = 600)
-ggsave("cohort-cca.svg", device = "svg")
+ggsave("cohort-cca.svg", device = "svg", width = 7, height = 7)
 
 
 # terms
@@ -65,6 +61,10 @@ phyloseq::plot_ordination(pslog, ordu, color = "cohort") +
   scale_color_manual(values=c("#66C2A5", "#FC8D62")) +
   stat_ellipse(type = "norm", linetype = 2) +
   theme_bw() + 
-  labs(color = "Cohort")
+  labs(color = "Cohort") + 
+  theme(axis.text=element_text(size=20, face = "bold"),
+        axis.title=element_text(size=20,face="bold"),
+	legend.position = "none") +
+  coord_fixed()
 ggsave("pcoa.png", device = "png", dpi = 600)
 ggsave("pcoa.svg", device = "svg")
