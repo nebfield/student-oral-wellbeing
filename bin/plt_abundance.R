@@ -88,7 +88,7 @@ ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
   scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
   scale_x_continuous(expand = c(0, 0)) + 
   theme_linedraw() +
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=20, face = "bold"))
   # theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
 
 
@@ -137,7 +137,7 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   ylab("Relative abundance") + 
   scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
   scale_x_continuous(expand = c(0, 0)) + 
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=20, face = "bold"))
 
 ggsave("family_abundance.png", width = 12, device = "png")
 ggsave("family_abundance.svg", width = 12, device = "svg")
