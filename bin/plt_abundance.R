@@ -78,7 +78,7 @@ phyla_df %>%
   mutate(group_no = match(sample, unique(sample))) ->
   phyla_df 
 
-ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
+p <- ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
   geom_col(position = position_stack(reverse = TRUE)) +
   facet_wrap(~cohort, scales = "free",
              labeller=cohort_labeller) + 
@@ -88,10 +88,10 @@ ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
   scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
   scale_x_continuous(expand = c(0, 0)) + 
   theme_linedraw() +
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=20, face = "bold"))
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=20, face = "bold"), legend.text=element_text(size = 12), legend.position = "bottom")
   # theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
 
-
+(p)
 ggsave("phyla_abundance.png", width = 12, device = "png")
 ggsave("phyla_abundance.svg", width = 12, device = "svg")
 
@@ -127,7 +127,7 @@ fam_df %>%
   mutate(group_no = match(sample, unique(sample))) ->
   fam_df 
 
-ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
+f <- ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   geom_col(position = position_stack(reverse = TRUE)) +
   facet_wrap(~cohort, scales = "free",
              labeller=cohort_labeller) + 
@@ -137,8 +137,9 @@ ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   ylab("Relative abundance") + 
   scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
   scale_x_continuous(expand = c(0, 0)) + 
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=20, face = "bold"))
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), legend.position = "bottom", text = element_text(size=20, face = "bold"), legend.text=element_text(size = 12))
 
+(f)
 ggsave("family_abundance.png", width = 12, device = "png")
 ggsave("family_abundance.svg", width = 12, device = "svg")
 

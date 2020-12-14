@@ -93,16 +93,15 @@ sigtabgen$Phylum <-
     ))
     
 ggplot(sigtabgen, aes(y=log2FoldChange, x=lab, fill=Phylum)) + 
-  geom_hline(yintercept = 0.0, color = "gray", size = 0.5) +
   geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0.0, color = "black", size = 1.5) +
   coord_flip() +
-  theme_linedraw() + 
+  theme_bw() + 
   xlab("") + 
   ylab(expression(Log["2"]*"-fold change")) + 
-  ggtitle("Healthy vs Depressed") + 
   # scale_fill_brewer(palette = "Paired") +
   scale_fill_manual(values=c("#B2DF8A", "#33A02C", "#A6CEE3", "#FF7F00", "#1F78B4", "#FB9A99")) +  
-  theme(text = element_text(size=12),
+  theme(text = element_text(size=12, face ="bold"),
         axis.text.y = element_text(face = "italic"))
   
 ggsave("diff_abund.png", device = "png", width = 10)
