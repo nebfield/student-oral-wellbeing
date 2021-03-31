@@ -12,6 +12,24 @@ second_wave_map = file("/data/projects/wp6/sws_microbiome/second_wave_n30/mappin
 second_sample_meta = file("/data/projects/wp6/sws_microbiome/second_sample_meta.tsv")
 
 silva = file("/data/projects/wp6/silva-132-99-nb-classifier.qza")
+homd = Channel.fromPath("http://www.homd.org/ftp/publication_data/20190709/eHOMDv15.1_FL_Compilation_TS_ID_GB.fa.gz")
+
+process qiime_homd {
+    container 'qiime2/core:2019.7'
+
+    input:
+    file homd
+
+    output:
+    file "homd.qza" into homd_qza
+
+    """
+    qiime tools import \
+     --type 'FeatureData[Sequence]' \
+     --input-path ${homd} \
+     --output-path homd.qza
+    """
+}
 
 process qiime_import {
     container 'qiime2/core:2019.7'
