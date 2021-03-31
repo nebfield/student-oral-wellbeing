@@ -5,46 +5,77 @@ first_wave_index = file("/data/projects/wp6/sws_microbiome/depression_resequence
 first_wave_map = file("/data/projects/wp6/sws_microbiome/depression_resequenced_data/mappingfile_Ulster.txt")
 first_sample_meta = file("/data/projects/wp6/sws_microbiome/first_sample_meta.tsv")
 
-second_wave_forward = file("/data/projects/wp6/sws_microbiome/second_wave_n30/Ulster_July2017_S0_L001_R1_001.fastq.gz")
-second_wave_reverse = file("/data/projects/wp6/sws_microbiome/second_wave_n30/Ulster_July2017_S0_L001_R2_001.fastq.gz")
-second_wave_index = file("/data/projects/wp6/sws_microbiome/second_wave_n30/Ulster_July2017_S0_L001_I1_001.fastq.gz")
-second_wave_map = file("/data/projects/wp6/sws_microbiome/second_wave_n30/mappingfile_Ulster_July2017.txt")
-second_sample_meta = file("/data/projects/wp6/sws_microbiome/second_sample_meta.tsv")
-
 silva = file("/data/projects/wp6/silva-132-99-nb-classifier.qza")
-homd = Channel.fromPath("http://www.homd.org/ftp/publication_data/20190709/eHOMDv15.1_FL_Compilation_TS_ID_GB.fa.gz")
+homd_fasta = Channel.fromPath("http://www.homd.org/ftp/16S_rRNA_refseq/HOMD_16S_rRNA_RefSeq/V15.22/HOMD_16S_rRNA_RefSeq_V15.22.fasta")
+homd_tax = Channel.fromPath("http://www.homd.org/ftp/16S_rRNA_refseq/HOMD_16S_rRNA_RefSeq/V15.22/HOMD_16S_rRNA_RefSeq_V15.22.qiime.taxonomy")
 
 process qiime_homd {
-    container 'qiime2/core:2019.7'
+    label 'qiime'
+    stageInMode 'copy'
 
     input:
-    file homd
+    file homd_fasta
+    file homd_tax
 
     output:
-    file "homd.qza" into homd_qza
+    file "ref-seqs.qza" into homd_ref_seqs
+    file "ref-taxonomy.qza" into homd_ref_tax
 
     """
+    # add Z to all IDs
+    # yes, seriously 
+    sed 's/^>/>Z/' HOMD_16S_rRNA_RefSeq_V15.22.fasta > homd_z.fasta
+    sed 's/^/Z/' HOMD_16S_rRNA_RefSeq_V15.22.qiime.taxonomy > tax.txt
     qiime tools import \
      --type 'FeatureData[Sequence]' \
-     --input-path ${homd} \
+     --input-path homd_z.fasta \
      --output-path homd.qza
+
+    # 314F / 806 R primers
+    # don't set --p-trunc-len with paired-end sequencing
+    qiime feature-classifier extract-reads \
+      --i-sequences homd.qza \
+      --p-f-primer CCTACGGGAGGCAGCAG \
+      --p-r-primer GGACTACHVGGGTWTCTAAT \
+      --o-reads ref-seqs.qza
+
+    qiime tools import \
+      --type 'FeatureData[Taxonomy]' \
+      --input-format HeaderlessTSVTaxonomyFormat \
+      --input-path tax.txt \
+      --output-path ref-taxonomy.qza
     """
 }
 
+process qiime_train {
+    label 'qiime'
+
+    input:
+    file homd_ref_seqs
+    file homd_ref_tax
+
+    output:
+    file "classifier.qza" into homd_classifier
+
+    """
+    qiime feature-classifier fit-classifier-naive-bayes \
+      --i-reference-reads $homd_ref_seqs \
+      --i-reference-taxonomy $homd_ref_tax \
+      --o-classifier classifier.qza 
+    """
+
+}
+
 process qiime_import {
-    container 'qiime2/core:2019.7'
+    label 'qiime'
 
     input:
     file first_wave_forward
     file first_wave_reverse
     file first_wave_index
-    file second_wave_forward
-    file second_wave_reverse
-    file second_wave_index
 
     output:
     file "first_wave.qza" into first_wave
-    file "second_wave.qza" into second_wave
 
     """
     mkdir first_wave/
@@ -56,19 +87,12 @@ process qiime_import {
       --type EMPPairedEndSequences \
       --input-path first_wave/ \
       --output-path first_wave.qza
-    mkdir second_wave/
-    mv $second_wave_forward second_wave/forward.fastq.gz
-    mv $second_wave_reverse second_wave/reverse.fastq.gz
-    mv $second_wave_index second_wave/barcodes.fastq.gz
-    env TMPDIR='/data/projects/wp6/tmp' qiime tools import \
-      --type EMPPairedEndSequences \
-      --input-path second_wave/ \
-      --output-path second_wave.qza
-    """
+   """
 }
 
 process qiime_demux {
-    container 'qiime2/core:2019.7'
+    label 'qiime'
+
     storeDir "/data/projects/wp6/sws_pipeline_v2/cache/"
     publishDir "$baseDir/results/demux", mode: 'copy', overwrite: true
     beforeScript 'mkdir -p /data/projects/wp6/tmp/'
@@ -76,14 +100,10 @@ process qiime_demux {
     input:
     file first_wave
     file first_wave_map
-    file second_wave
-    file second_wave_map
 
     output:
     file "first_demuxed.qza" into demuxed_first
     file "first_demuxed_ec.qza" into demuxed_first_ec
-    file "second_demuxed.qza" into demuxed_second
-    file "second_demuxed_ec.qza" into demuxed_second_ec
 
     """
     # use env instead of nextflow's env commands (annoying docker bug)
@@ -94,31 +114,21 @@ process qiime_demux {
       --p-rev-comp-mapping-barcodes \
       --o-per-sample-sequences first_demuxed.qza \
       --o-error-correction-details first_demuxed_ec.qza
-    env TMPDIR='/data/projects/wp6/tmp' qiime demux emp-paired \
-      --i-seqs $second_wave \
-      --m-barcodes-file $second_wave_map \
-      --m-barcodes-column BarcodeSequence \
-      --p-rev-comp-mapping-barcodes \
-      --o-per-sample-sequences second_demuxed.qza \
-      --o-error-correction-details second_demuxed_ec.qza
     """
 }
 
 process qiime_denoise {
-    container 'qiime2/core:2019.7'
+    label 'qiime'
+
     publishDir "$baseDir/results/denoise", mode: 'copy', overwrite: true
 
     input:
     file demuxed_first
-    file demuxed_second
 
     output:
     file "first_feat_tab_filt.qza" into first_feat_tab, first_feat_tab_pc, first_feat_tab_qc, first_feat_tab_ord, first_feat_tab_pred
     file "first_rep_seqs.qza" into first_rep_seqs, first_rep_seqs_pg, first_rep_seqs_da, first_rep_seqs_pc
     file "first_stats.qza" into first_stats
-    file "second_feat_tab.qza" into second_feat_tab, second_feat_tab_pc, second_feat_tab_qc
-    file "second_rep_seqs.qza" into second_rep_seqs, second_rep_seqs_pg, second_rep_seqs_pc
-    file "second_stats.qza" into second_stats
 
     """
     env TMPDIR='/data/projects/wp6/tmp' qiime dada2 denoise-paired \
@@ -129,14 +139,6 @@ process qiime_denoise {
       --o-table first_feat_tab.qza \
       --o-representative-sequences first_rep_seqs.qza \
       --o-denoising-stats first_stats.qza
-    env TMPDIR='/data/projects/wp6/tmp' qiime dada2 denoise-paired \
-      --i-demultiplexed-seqs $demuxed_second \
-      --p-trunc-len-f 240 \
-      --p-trunc-len-r 225 \
-      --p-n-threads 0 \
-      --o-table second_feat_tab.qza \
-      --o-representative-sequences second_rep_seqs.qza \
-      --o-denoising-stats second_stats.qza
 
     # filter from first batch (same as qza_to_ps.R)
     echo SampleID > discard_samples.tsv
@@ -153,46 +155,37 @@ process qiime_denoise {
 }
 
 process qiime_taxonomy {
-    container 'qiime2/core:2019.7'
+    label 'qiime'
+
     publishDir "$baseDir/results/tax", mode: 'copy', overwrite: true
 
     input:
     file first_rep_seqs
-    file second_rep_seqs
-    file silva
+    file homd_classifier 
 
     output:
     file "first_taxonomy.qza" into first_taxonomy
-    file "second_taxonomy.qza" into second_taxonomy
     val "taxonomy" into tax_channel
 
     """
     env TMPDIR='/data/projects/wp6/tmp' qiime feature-classifier classify-sklearn \
       --i-reads $first_rep_seqs \
-      --i-classifier $silva \
+      --i-classifier ${homd_classifier} \
       --p-n-jobs 16 \
       --o-classification first_taxonomy.qza
-    env TMPDIR='/data/projects/wp6/tmp' qiime feature-classifier classify-sklearn \
-      --i-reads $second_rep_seqs \
-      --i-classifier $silva \
-      --p-n-jobs 16 \
-      --o-classification second_taxonomy.qza
     """
 }
 
 process qiime_phylogeny {
-    container 'qiime2/core:2019.7'
+    label 'qiime'
 
     input:
     file first_rep_seqs_pg
-    file second_rep_seqs_pg
     val tax_channel
 
     output:
     file "first_unrooted_tree.qza" into first_unrooted_tree
     file "first_rooted_tree.qza" into first_rooted_tree, first_rooted_tree_ord
-    file "second_unrooted_tree.qza" into second_unrooted_tree
-    file "second_rooted_tree.qza" into second_rooted_tree
 
     """
     env TMPDIR='/data/projects/wp6/tmp' qiime phylogeny align-to-tree-mafft-fasttree \
@@ -202,35 +195,24 @@ process qiime_phylogeny {
       --o-tree first_unrooted_tree.qza \
       --o-rooted-tree first_rooted_tree.qza \
       --p-n-threads 16
-    env TMPDIR='/data/projects/wp6/tmp' qiime phylogeny align-to-tree-mafft-fasttree \
-      --i-sequences $second_rep_seqs_pg \
-      --o-alignment second_aligned_rep_seqs.qza \
-      --o-masked-alignment second_masked_aligned_rep_seqs.qza \
-      --o-tree second_unrooted_tree.qza \
-      --o-rooted-tree second_rooted_tree.qza \
-      --p-n-threads 16
-      """
+     """
 }
 
 process qiime_QC {
+    label 'qiime'
+
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
-    container 'qiime2/core:2019.7'
 
     input:
     file first_feat_tab_qc
-    file second_feat_tab_qc
 
     output:
     file "first_qc/"
-    file "second_qc/"
 
     """
     qiime feature-table summarize \
         --i-table $first_feat_tab_qc \
         --output-dir first_qc/
-    qiime feature-table summarize \
-        --i-table $second_feat_tab_qc \
-        --output-dir second_qc/
     """
 }
 
@@ -251,24 +233,6 @@ process qiime_to_phyloseq {
     """
     qza_to_ps.R $first_feat_tab $first_rooted_tree $first_taxonomy $first_sample_meta
     """ 
-}
-
-process qiime_to_phyloseq_val {
-    container 'nebfold/bioc'
-
-    input:
-    file second_feat_tab
-    file second_rooted_tree
-    file second_taxonomy
-    file second_sample_meta
-
-    output:
-    file "ps_second.rds" into ps_val_pred
-
-    """
-    qza_to_ps_val.R $second_feat_tab $second_rooted_tree \
-      $second_taxonomy $second_sample_meta
-    """
 }
 
 process qiime_ordination {
@@ -357,71 +321,6 @@ process plot_ordination {
 
     """
     plot_ordination.R $ps_first_ord
-    """
-}
-
-process qiime_picrust2 {
-    container 'nebfold/picrust2'
-    publishDir "$baseDir/results", mode: 'copy', overwrite: true
-
-    input:
-    file first_feat_tab_pc
-    file first_rep_seqs_pc
-
-    output:
-    file "first_*.qza" into first_ko_picrust2
-    file "biom/feature-table.biom" into mc_biom
-
-    """
-    qiime picrust2 full-pipeline \
-       --i-table $first_feat_tab_pc \
-       --i-seq $first_rep_seqs_pc \
-       --o-ko-metagenome first_ko.qza \
-       --o-ec-metagenome first_ec.qza \
-       --o-pathway-abundance first_mc.qza \
-       --p-threads 24 \
-       --p-hsp-method mp \
-       --p-max-nsti 2
-
-    qiime tools export \
-        --input-path first_mc.qza \
-        --output-path biom
-    """
-}
-
-process prepare_lefse {
-    container 'nebfold/ps' 
-    publishDir "$baseDir/results", mode: 'copy', overwrite: true
-
-    input:
-    file ps_lefse
-    file mc_biom
-
-    output:
-    file 'lefse.txt' into lefse_input
-
-    """
-    lefse.R $ps_lefse $mc_biom
-    """
-}
-
-process lefse {
-    publishDir "$baseDir/results", mode: 'copy', overwrite: true
-    conda 'biobakery::lefse' 
-
-    input:
-    file lefse_input
-
-    output:
-    file 'sws.res'
-    file 'sws.pdf'
-
-    """
-    format_input.py $lefse_input sws.in -c 2 -u 1 -o 1000000
-    run_lefse.py sws.in sws.res -a 0.01 -w 0.01 
-    plot_res.py sws.res sws.pdf --format pdf --dpi 300
-    # note to self: 
-    # docker run -v /path/to/workdir/:/home/linuxbrew/work -it biobakery/lefse /bin/bash
     """
 }
 

@@ -88,11 +88,11 @@ p <- ggplot(phyla_df, aes(x = group_no, y = value, fill = Phylum)) +
   scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
   scale_x_continuous(expand = c(0, 0)) + 
   theme_linedraw() +
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=20, face = "bold"), legend.text=element_text(size = 12), legend.position = "bottom")
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=14), legend.text=element_text(size = 12))
   # theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
 
 (p)
-ggsave("phyla_abundance.png", width = 12, device = "png")
+ggsave("phyla_abundance.png", height = 6, width = 12, device = "png")
 ggsave("phyla_abundance.svg", width = 12, device = "svg")
 
 
@@ -136,11 +136,11 @@ f <- ggplot(fam_df, aes(x = group_no, y = value, fill = Family)) +
   xlab("Sample") +
   ylab("Relative abundance") + 
   scale_y_continuous(expand = c(0,0), labels = scales::percent) + 
-  scale_x_continuous(expand = c(0, 0)) + 
-  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), legend.position = "bottom", text = element_text(size=20, face = "bold"), legend.text=element_text(size = 12))
+  scale_x_continuous(expand = c(0, 0)) +
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank(), text = element_text(size=14), legend.text=element_text(size = 12))  
 
 (f)
-ggsave("family_abundance.png", width = 12, device = "png")
+ggsave("family_abundance.png", height = 6, width = 12, device = "png")
 ggsave("family_abundance.svg", width = 12, device = "svg")
 
 sigbugs_ps <- phyloseq::prune_taxa(sigbugs$names, qiime_ra)
