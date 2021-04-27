@@ -126,7 +126,7 @@ process qiime_denoise {
     file demuxed_first
 
     output:
-    file "first_feat_tab_filt.qza" into first_feat_tab, first_feat_tab_pc, first_feat_tab_qc, first_feat_tab_ord, first_feat_tab_pred
+    file "first_feat_tab_filt.qza" into first_feat_tab, first_feat_tab_pc, first_feat_tab_qc, first_feat_tab_ord
     file "first_rep_seqs.qza" into first_rep_seqs, first_rep_seqs_pg, first_rep_seqs_da, first_rep_seqs_pc
     file "first_stats.qza" into first_stats
 
@@ -227,7 +227,7 @@ process qiime_to_phyloseq {
     file first_sample_meta
 
     output:
-    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_lefse, ps_first_ord, ps_first_pred, ps_first_ad
+    file "ps_first.rds" into ps_first_da, ps_first_abundance, ps_first_ord, ps_first_ad
     file "samp_dat.tsv" into first_samp_dat
 
     """
