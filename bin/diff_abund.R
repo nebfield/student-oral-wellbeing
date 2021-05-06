@@ -99,6 +99,15 @@ sig_tidy %>%
     )
   ) %>%
   mutate(lab = make.unique(as.character(lab), sep = " ")) %>%
+  # relabel make unique...
+  mutate(
+    lab = fct_recode(
+      lab,
+      "Neisseria ASV 1" = "Neisseria",
+      "Neisseria ASV 2" = "Neisseria 1",
+      "Neisseria ASV 3" = "Neisseria 2",
+      "Alloprevotella tannerae ASV 1" = "Alloprevotella tannerae",
+      "Alloprevotella tannerae ASV 2" = "Alloprevotella tannerae 1")) %>% 
   tibble::as_tibble(.) %>%
   mutate(Phylum = str_replace(Phylum, "p__", "")) -> sigtabgen
 
@@ -173,8 +182,35 @@ sigtabgen %>%
   expand_limits(y = 4) +
   scale_y_continuous(breaks = seq(-12, 4, len = 9)) -> genus_plot
 
+# do one big ugly graph
+sigtabgen %>%
+  mutate(lab = fct_reorder(lab, log2FoldChange, .desc = TRUE)) %>%
+  ggplot(., aes(y = log2FoldChange, x = lab, fill = Phylum)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0.0,
+             color = "black",
+             size = 1.5) +
+  coord_flip() +
+  theme_bw() +
+  xlab("") +
+  ylab(expression(Log["2"] * "-fold change")) +
+  # scale_fill_brewer(palette = "Paired") +
+  #scale_fill_manual(values = c("#B2DF8A", "#FB9A99")) +
+  theme(text = element_text(size = 12, face = "bold"),
+        axis.text.y = element_text(face = "italic")) +
+  scale_fill_manual(values = c(
+    "#B2DF8A",
+    "#33A02C",
+    "#A6CEE3",
+    "#FF7F00",
+    "#1F78B4",
+    "#FB9A99"
+  )) 
+ggsave("ugly_plot.png")
+
 plot_grid(genus_plot,
           species_plot,
           labels = "AUTO",
           rel_widths = c(1, 1.3))
 ggsave("diff_abund.png", width = 10, height = 5)
+
