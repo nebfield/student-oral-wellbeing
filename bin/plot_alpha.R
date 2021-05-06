@@ -11,6 +11,7 @@ ps_data <- readRDS(args[[1]])
 
 ad <- plot_richness(ps_data, x="cohort", measures=c("Observed", "InvSimpson", "Shannon")) 
 df <- ad$data # just want the raw data
+df$variable <- fct_recode(df$variable, "Observed ASVs" = "Observed")
 
 ggplot(df, aes(x = cohort, y = value, fill = cohort)) + 
   geom_boxplot() + 
