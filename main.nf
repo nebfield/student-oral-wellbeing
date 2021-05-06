@@ -290,7 +290,7 @@ process differential_abundance {
 }
 
 process plot_abundance {
-    container 'nebfold/tidyr'
+    container 'nebfield/tidyr'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
