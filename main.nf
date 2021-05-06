@@ -273,7 +273,7 @@ process rep_seq_to_df {
 }
 
 process differential_abundance {
-    conda 'bioconda::bioconductor-deseq2=1.26.0 r::r-tidyverse bioconda::bioconductor-phyloseq conda-forge::r-cowplot'  
+    container 'nebfield/sws'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
@@ -290,7 +290,7 @@ process differential_abundance {
 }
 
 process plot_abundance {
-    container 'nebfold/tidyr' 
+    container 'nebfold/tidyr'
     publishDir "$baseDir/results", mode: 'copy', overwrite: true
 
     input:
@@ -299,7 +299,6 @@ process plot_abundance {
 
     output:
     file "*.png"
-    file "*.svg"
 
     """
     plt_abundance.R $ps_first_abundance $diff_abund
