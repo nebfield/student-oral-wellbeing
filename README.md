@@ -9,3 +9,4 @@ The 16S sequence data for this study have been deposited in the European Nucleot
 ## TODO
 
 * Link PMID with ENA 
+* Add instructions for working with the public data
