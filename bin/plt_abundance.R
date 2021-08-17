@@ -51,7 +51,7 @@ cohort <- data.frame(sample_data(phyla)[, "cohort"]) %>%
 
 phyla_df <- data.frame(otu_table(phyla)) %>%
   tibble::rownames_to_column("taxID") %>%
-  tidyr::pivot_longer(cols = X1000:X999, names_to = "sample") %>%
+  pivot_longer(cols = X1000:X999, names_to = "sample") %>%
   left_join(phyla_tax) %>%
   left_join(cohort)
 
@@ -98,7 +98,7 @@ ggsave("phyla_abundance.svg", width = 12, device = "svg")
 
 fam_df <- data.frame(otu_table(fam)) %>%
   tibble::rownames_to_column("taxID") %>%
-  tidyr::pivot_longer(cols = X1000:X999, names_to = "sample") %>%
+  pivot_longer(cols = X1000:X999, names_to = "sample") %>%
   left_join(fam_tax) %>%
   left_join(cohort)
 
@@ -158,7 +158,7 @@ sigbugs_tax <- data.frame(phyloseq::tax_table(sigbugs_ps)[, "Species"]) %>%
 
 sig_df <- data.frame(otu_table(sigbugs_ps)) %>%
   tibble::rownames_to_column("taxID") %>%
-  tidyr::pivot_longer(cols = X1000:X999, names_to = "sample") %>%
+  pivot_longer(cols = X1000:X999, names_to = "sample") %>%
   left_join(sigbugs_tax) %>%
   left_join(cohort) %>%
   filter(value != 0) %>% # long tailed data ruins box plots 

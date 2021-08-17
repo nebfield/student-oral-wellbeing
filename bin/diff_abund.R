@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 library("tidyverse")
-library("cowplot")
+#library("cowplot")
 
 # parameters -------------------------------------------------------------------
 # 1: phyloseq rds
@@ -208,9 +208,12 @@ sigtabgen %>%
   )) 
 ggsave("ugly_plot.png")
 
-plot_grid(genus_plot,
-          species_plot,
-          labels = "AUTO",
-          rel_widths = c(1, 1.3))
-ggsave("diff_abund.png", width = 10, height = 5)
-
+#plot_grid(genus_plot,
+#          species_plot,
+#          labels = "AUTO",
+#          rel_widths = c(1, 1.3))
+# ggsave("diff_abund.png", width = 10, height = 5)
+genus_plot
+ggsave("genus.png")
+species_plot
+ggsave("species.png")
